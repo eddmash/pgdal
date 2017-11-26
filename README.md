@@ -10,11 +10,13 @@ This module is UNSTABLE. Don't use it on production environment as it is.
 
 Install
 -------
-
+```
+git clone https://github.com/eddmash/pgdal.git
+cd pgdal
 $ /path/to/php5/bin/phpize
-$ ./configure --with-php-config=/path/to/php5/bin/php-config
+$ ./configure --enable-pgdal
 $ make && make install
-
+```
 Usage
 -----
 
