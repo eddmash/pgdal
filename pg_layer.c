@@ -38,11 +38,33 @@ zend_object_value layer_create_handler(zend_class_entry *type TSRMLS_DC)
 // -------------------------------------- METHODS -----------------------------------
 
 /**
+ * Return feature count.
+ */
+PHP_METHOD(Layer, getFeatureCount)
+{
+    long index;
+    zend_bool force = 1;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, (char*)"|b", &force) == FAILURE) {
+        return;
+    }
+
+    ogr_layer_object *layerObj = (ogr_layer_object *)zend_object_store_get_object(getThis());
+    if(!layerObj->layer){
+        RETURN_STRING("MISING DEFINITION", 1);
+    }
+    RETURN_LONG(OGR_L_GetFeatureCount(layerObj->layer, force));
+}
+/**
  * Return the name of this layer in the Data Source.
  */
 PHP_METHOD(Layer, getName)
 {
-//    OGR_L_GetName
+    ogr_layer_object *layerObj = (ogr_layer_object *)zend_object_store_get_object(getThis());
+    if(!layerObj->layer){
+        RETURN_STRING("MISING DEFINITION", 1);
+    }
+    RETURN_STRING((char *)OGR_L_GetName(layerObj->layer), 1);
 }
 
 PHP_METHOD(Layer, getLayerDfn)
@@ -71,6 +93,7 @@ PHP_METHOD(Layer, getLayerDfn)
 
 const zend_function_entry layer_methods[] = {
         PHP_ME(Layer,  getName, NULL, ZEND_ACC_PUBLIC)
+        PHP_ME(Layer,  getFeatureCount, NULL, ZEND_ACC_PUBLIC)
         PHP_ME(Layer,  getLayerDfn, NULL, ZEND_ACC_PUBLIC)
         PHP_FE_END
 };
