@@ -21,26 +21,14 @@ Usage
 -----
 
 ```
-// get gdal version
-var_dump(PGdal::getReleaseName());
-
-// read a shapefile
+var_dump("GDAL VERSION :: ".PGdal::getReleaseName());
 $ds  = new DataSource('usa_states/usa_state_shapefile.shp');
-var_dump($ds);
 echo "<br>";
-// get no of layers in the shapefile
-var_dump($ds->getLayerCount());
+var_dump("NO OF LAYERS :: ".$ds->getLayerCount());
 echo "<br>";
-
-// get first layer
 $layer = $ds->getLayer(0);
-var_dump($layer);
-echo "<br>";
-
-// get layer feature definitions
 $ldfn = $layer->getLayerDfn();
-var_dump($ldfn);
+var_dump("LAYER NAME :: ".$ldfn->getName());
 echo "<br>";
-var_dump($ldfn->getName());
-var_dump($ldfn->getFieldCount());
+var_dump("NO OF FIELDS :: ".$ldfn->getFieldCount());
 ```
