@@ -39,6 +39,7 @@ static int le_datasource_descriptor;
 static int le_layer_descriptor;
 static int le_feature_descriptor;
 static int le_field_dfn_descriptor;
+static int le_field_type_descriptor;
 
 /* {{{ PHP_INI
  */
@@ -81,6 +82,7 @@ PHP_FUNCTION(OGR_DS_Destroy)
 
     OGR_DS_Destroy(hDS);
 }
+
 
 /* Every user-visible function in PHP should document itself in the source */
 /* {{{ proto string confirm_pgdal_compiled(string arg)
@@ -279,6 +281,28 @@ PHP_FUNCTION(OGR_L_GetFeature)
 /* Every user-visible function in PHP should document itself in the source */
 /* {{{ proto string confirm_pgdal_compiled(string arg)
    Return a string to confirm that the module is compiled in */
+PHP_FUNCTION(OGR_F_Destroy)
+{
+    OGRFeatureH * featureH;
+    zval *feature_resource;
+    long fid;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &feature_resource) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(featureH, OGRFeatureH*,
+                            &feature_resource, -1, PHP_FEATURE_DESCRIPTOR_RES_NAME,
+                            le_feature_descriptor);
+
+
+    OGR_F_Destroy(featureH);
+}
+
+/* Every user-visible function in PHP should document itself in the source */
+/* {{{ proto string confirm_pgdal_compiled(string arg)
+   Return a string to confirm that the module is compiled in */
 PHP_FUNCTION(OGR_F_GetFieldCount)
 {
     OGRFeatureDefnH * featureH;
@@ -337,6 +361,44 @@ PHP_FUNCTION(OGR_Fld_GetNameRef)
 
     RETURN_STRING((char *)OGR_Fld_GetNameRef(fieldDfnH), 1);
 }
+
+/* Every user-visible function in PHP should document itself in the source */
+/* {{{ proto string confirm_pgdal_compiled(string arg)
+   Return a string to confirm that the module is compiled in */
+PHP_FUNCTION(OGR_Fld_GetType)
+{
+    OGRFieldDefnH * fieldDfnH;
+    zval *field_dfn_resource;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &field_dfn_resource) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(fieldDfnH, OGRFieldDefnH*, &field_dfn_resource, -1, PHP_FIELD_DESCRIPTOR_RES_NAME,
+                            le_field_dfn_descriptor);
+
+    RETURN_LONG(OGR_Fld_GetType(fieldDfnH));
+
+}
+
+/* Every user-visible function in PHP should document itself in the source */
+/* {{{ proto string confirm_pgdal_compiled(string arg)
+   Return a string to confirm that the module is compiled in */
+PHP_FUNCTION(OGR_GetFieldTypeName)
+{
+    //OGRFieldType eType;
+    long field_type_resource;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &field_type_resource) == FAILURE ) {
+        RETURN_NULL();
+    }
+
+    //eType = (OGRFieldType)field_type_resource;
+
+    RETURN_STRING((char *)OGR_GetFieldTypeName(field_type_resource), 1);
+
+}
 /* }}} */
 /* The previous line is meant for vim and emacs, so it can correctly fold and 
    unfold functions in source code. See the corresponding marks just before 
@@ -371,6 +433,9 @@ PHP_MINIT_FUNCTION(pgdal)
 
     le_field_dfn_descriptor = zend_register_list_destructors_ex(
 				NULL, NULL, PHP_FIELD_DESCRIPTOR_RES_NAME, module_number);
+
+    le_field_type_descriptor = zend_register_list_destructors_ex(
+				NULL, NULL, PHP_FIELD_TYPE_DESCRIPTOR_RES_NAME, module_number);
 
 	/* If you have INI entries, uncomment these lines
 	REGISTER_INI_ENTRIES();
@@ -433,6 +498,7 @@ const zend_function_entry pgdal_functions[] = {
 
 	PHP_FE(OGROpen,	NULL)
 	PHP_FE(OGR_DS_GetName,	NULL)
+	PHP_FE(OGR_DS_Destroy,	NULL)
 
     // ==================== LAYERS ======================
 
@@ -442,11 +508,14 @@ const zend_function_entry pgdal_functions[] = {
     // =================== FEATURES =================
     PHP_FE(OGR_L_GetFeature, NULL)
     PHP_FE(OGR_L_GetFeatureCount, NULL)
+    PHP_FE(OGR_F_Destroy, NULL)
 
     // =================== FIELDs =================
     PHP_FE(OGR_F_GetFieldCount, NULL)
     PHP_FE(OGR_F_GetFieldDefnRef, NULL)
     PHP_FE(OGR_Fld_GetNameRef, NULL)
+    PHP_FE(OGR_Fld_GetType, NULL)
+    PHP_FE(OGR_GetFieldTypeName, NULL)
 
 
 	PHP_FE_END	/* Must be the last line in pgdal_functions[] */

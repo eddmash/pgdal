@@ -53,12 +53,15 @@ if ($ds):
                     $fields = [];
                     for($fli=0; $fli< $fieldCount; $fli++){
                         $fieldDfn = OGR_F_GetFieldDefnRef($feature, $fli);
-                        $fields[] = OGR_Fld_GetNameRef($fieldDfn);
+                        $type = OGR_Fld_GetType($fieldDfn);
+                        $typeName = OGR_GetFieldTypeName($type);
+                        $fields[] = OGR_Fld_GetNameRef($fieldDfn)." <small>($typeName)</small> ";
                     }
-                    echo "---- FIELDS [ ".implode(", ", $fields)." ] <br>";
+                    echo "---- FIELDS [ ".implode(", ", $fields)." ]<br>";
                 else:
                     echo "NO FEATURE FOUND <br>";
                 endif;
+                OGR_F_Destroy($feature);
             }
 
         else:
@@ -68,6 +71,8 @@ if ($ds):
 else:
     echo "FAILED TO OPEN<br>";
 endif;
+
+OGR_DS_Destroy($ds);
 echo "<br>";
 
 ```
