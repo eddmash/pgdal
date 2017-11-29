@@ -1,0 +1,6 @@
+#/bin/sh
+$devdir/mybin/bin/phpize --clean
+$devdir/mybin/bin/phpize
+./configure --with-php-config=$devdir/mybin/bin/php-config
+make
+make install
