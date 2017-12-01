@@ -163,9 +163,8 @@ PHP_FUNCTION(OGR_DS_GetLayerByName)
 
     OGRDataSourceH *hDS;
     zval *ds_resource;
-    zend_bool update_mode = 0;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rl", &ds_resource, &name, name_len) == FAILURE ) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &ds_resource, &name, name_len) == FAILURE ) {
         RETURN_NULL();
     }
     /* Use the zval* to verify the resource type and
@@ -253,6 +252,67 @@ PHP_FUNCTION(OGR_L_GetFeatureCount)
 
     RETURN_LONG(OGR_L_GetFeatureCount(layerH, force));
 }
+/* Every user-visible function in PHP should document itself in the source */
+/* {{{ proto string confirm_pgdal_compiled(string arg)
+   Return a string to confirm that the module is compiled in */
+PHP_FUNCTION(OGR_L_GetName)
+{
+    OGRLayerH * layerH;
+    zval *lyr_resource;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &lyr_resource) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(layerH, OGRLayerH*,
+                            &lyr_resource, -1, PHP_LAYER_DESCRIPTOR_RES_NAME,
+                            le_layer_descriptor);
+
+    RETURN_STRING((char *)OGR_L_GetName(layerH), 1);
+}
+
+/* Every user-visible function in PHP should document itself in the source */
+/* {{{ proto string confirm_pgdal_compiled(string arg)
+   Return a string to confirm that the module is compiled in */
+PHP_FUNCTION(OGR_L_TestCapability)
+{
+    OGRLayerH * layerH;
+    zval *lyr_resource;
+    char * testName;
+    long testLen;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &lyr_resource, &testName, &testLen) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(layerH, OGRLayerH*,
+                            &lyr_resource, -1, PHP_LAYER_DESCRIPTOR_RES_NAME,
+                            le_layer_descriptor);
+
+    RETURN_BOOL(OGR_L_TestCapability(layerH, testName));
+}
+
+/* Every user-visible function in PHP should document itself in the source */
+/* {{{ proto string confirm_pgdal_compiled(string arg)
+   Return a string to confirm that the module is compiled in */
+PHP_FUNCTION(OGR_L_ResetReading)
+{
+    OGRLayerH * layerH;
+    zval *lyr_resource;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &lyr_resource) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(layerH, OGRLayerH*,
+                            &lyr_resource, -1, PHP_LAYER_DESCRIPTOR_RES_NAME,
+                            le_layer_descriptor);
+
+    OGR_L_ResetReading(layerH);
+}
 
 /* Every user-visible function in PHP should document itself in the source */
 /* {{{ proto string confirm_pgdal_compiled(string arg)
@@ -274,6 +334,36 @@ PHP_FUNCTION(OGR_L_GetFeature)
                             le_layer_descriptor);
 
     featureH = OGR_L_GetFeature(layerH, fid);
+
+    if(featureH==NULL){
+        RETURN_NULL();
+    }
+    ZEND_REGISTER_RESOURCE(return_value, featureH, le_feature_descriptor);
+}
+
+/* Every user-visible function in PHP should document itself in the source */
+/* {{{ proto string confirm_pgdal_compiled(string arg)
+   Return a string to confirm that the module is compiled in */
+PHP_FUNCTION(OGR_L_GetNextFeature)
+{
+    OGRLayerH * layerH;
+    OGRFeatureH * featureH;
+    zval *lyr_resource;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &lyr_resource) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(layerH, OGRLayerH*,
+                            &lyr_resource, -1, PHP_LAYER_DESCRIPTOR_RES_NAME,
+                            le_layer_descriptor);
+
+    featureH = OGR_L_GetNextFeature(layerH);
+
+    if(featureH==NULL){
+        RETURN_NULL();
+    }
 
     ZEND_REGISTER_RESOURCE(return_value, featureH, le_feature_descriptor);
 }
@@ -341,6 +431,27 @@ PHP_FUNCTION(OGR_F_GetFieldDefnRef)
     fieldDfnH = OGR_F_GetFieldDefnRef(featureH, field_index);
 
     ZEND_REGISTER_RESOURCE(return_value, fieldDfnH, le_field_dfn_descriptor);
+}
+
+/* Every user-visible function in PHP should document itself in the source */
+/* {{{ proto string confirm_pgdal_compiled(string arg)
+   Return a string to confirm that the module is compiled in */
+PHP_FUNCTION(OGR_F_GetFID)
+{
+    OGRFieldDefnH * fieldDfnH;
+    OGRFeatureH * featureH;
+    zval *feature_resource;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &feature_resource) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(featureH, OGRFeatureH*, &feature_resource, -1, PHP_FEATURE_DESCRIPTOR_RES_NAME,
+                            le_feature_descriptor);
+
+    RETURN_LONG(OGR_F_GetFID(featureH));
+
 }
 
 /* Every user-visible function in PHP should document itself in the source */
@@ -504,11 +615,17 @@ const zend_function_entry pgdal_functions[] = {
 
 	PHP_FE(OGR_DS_GetLayerCount,	NULL)
 	PHP_FE(OGR_DS_GetLayer,	NULL)
+	PHP_FE(OGR_DS_GetLayerByName,	NULL)
+	PHP_FE(OGR_L_GetName,	NULL)
+	PHP_FE(OGR_L_ResetReading,	NULL)
+	PHP_FE(OGR_L_TestCapability,	NULL)
 
     // =================== FEATURES =================
     PHP_FE(OGR_L_GetFeature, NULL)
     PHP_FE(OGR_L_GetFeatureCount, NULL)
     PHP_FE(OGR_F_Destroy, NULL)
+    PHP_FE(OGR_L_GetNextFeature, NULL)
+    PHP_FE(OGR_F_GetFID, NULL)
 
     // =================== FIELDs =================
     PHP_FE(OGR_F_GetFieldCount, NULL)
