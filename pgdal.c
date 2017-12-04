@@ -27,7 +27,9 @@
 #include "ext/standard/info.h"
 
 #include "ogr_api.h"
+#include "cpl_conv.h"
 #include "php_pgdal.h"
+#include "constants.h"
 
 /* If you declare any globals in php_pgdal.h uncomment this:
 ZEND_DECLARE_MODULE_GLOBALS(pgdal)
@@ -42,7 +44,10 @@ static int le_pgdal;
 static int le_datasource_descriptor;
 static int le_layer_descriptor;
 static int le_feature_descriptor;
+static int le_feature_dfn_descriptor;
+static int le_geometry_descriptor;
 static int le_field_type_descriptor;
+static int le_spatial_reference_descriptor;
 /* Remove comments and fill if you need to have entries in php.ini
 PHP_INI_BEGIN()
     STD_PHP_INI_ENTRY("pgdal.global_value",      "42", PHP_INI_ALL, OnUpdateLong, global_value, zend_pgdal_globals, pgdal_globals)
@@ -464,6 +469,72 @@ PHP_FUNCTION(OGR_F_GetFID)
         RETURN_LONG(OGR_F_GetFID(featureH));
                 //endregion
         }
+
+PHP_FUNCTION(OGR_F_GetDefnRef)
+        {
+            //region phpext
+            OGRFeatureDefnH * featureDfnH;
+            OGRFeatureH * featureH;
+            zval *feature_resource;
+
+            if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &feature_resource) == FAILURE ) {
+                RETURN_NULL();
+            }
+            /* Use the zval* to verify the resource type and
+             * retrieve its pointer from the lookup table */
+            ZEND_FETCH_RESOURCE(featureH, OGRFeatureH*, &feature_resource, -1, PHP_FEATURE_DESCRIPTOR_RES_NAME,
+            le_feature_descriptor);
+
+            featureDfnH = OGR_F_GetDefnRef(featureH);
+
+            ZEND_REGISTER_RESOURCE(return_value, featureDfnH, le_feature_dfn_descriptor);
+            //endregion
+        }
+
+PHP_FUNCTION(OGR_F_GetGeometryRef)
+        {
+            //region phpext
+            OGRGeometryH * geometryH;
+            OGRFeatureH * featureH;
+            zval *feature_resource;
+
+            if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &feature_resource) == FAILURE ) {
+                RETURN_NULL();
+            }
+            /* Use the zval* to verify the resource type and
+             * retrieve its pointer from the lookup table */
+            ZEND_FETCH_RESOURCE(featureH, OGRFeatureH*, &feature_resource, -1, PHP_FEATURE_DESCRIPTOR_RES_NAME,
+            le_feature_descriptor);
+
+            geometryH = OGR_F_GetGeometryRef(featureH);
+
+            ZEND_REGISTER_RESOURCE(return_value, geometryH, le_geometry_descriptor);
+            //endregion
+        }
+
+
+PHP_FUNCTION(OGR_FD_GetGeomType)
+{
+    //region phpext
+    OGRFeatureDefnH * featureDFN;
+    zval *featuredfn_resource;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &featuredfn_resource) == FAILURE ) {
+        RETURN_NULL();
+    }
+
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(featureDFN, OGRFeatureDefnH*, &featuredfn_resource, -1,
+                        PHP_FEATUREDFN_DESCRIPTOR_RES_NAME,
+                        le_feature_dfn_descriptor);
+
+    RETURN_LONG(OGR_FD_GetGeomType(featureDFN));
+    //endregion
+}
+
+
+
 // endregion
 
 //region field ########################## FIELD ROUTINES ############################
@@ -527,6 +598,122 @@ PHP_FUNCTION(OGR_GetFieldTypeName)
 
 // endregion
 
+
+
+//region geometry ########################## GEOMETRY ROUTINES ############################
+PHP_FUNCTION(OGR_G_GetGeometryName)
+{
+    //region phpext
+    OGRGeometryH * geometryH;
+    zval *geometry_resource;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &geometry_resource) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(geometryH, OGRGeometryH*, &geometry_resource, -1, PHP_GEOMETRY_DESCRIPTOR_RES_NAME,
+                        le_geometry_descriptor);
+
+
+    RETURN_STRING((char *)OGR_G_GetGeometryName(geometryH), 1);
+    //endregion
+}
+
+PHP_FUNCTION(OGR_G_GetGeometryType)
+{
+    //region phpext
+    OGRGeometryH * geometryH;
+    zval *geometry_resource;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &geometry_resource) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(geometryH, OGRGeometryH*, &geometry_resource, -1, PHP_GEOMETRY_DESCRIPTOR_RES_NAME,
+                        le_geometry_descriptor);
+
+
+    RETURN_LONG(OGR_G_GetGeometryType(geometryH));
+    //endregion
+}
+
+PHP_FUNCTION(OGR_G_GetDimension)
+{
+    //region phpext
+    OGRGeometryH * geometryH;
+    zval *geometry_resource;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &geometry_resource) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(geometryH, OGRGeometryH*, &geometry_resource, -1, PHP_GEOMETRY_DESCRIPTOR_RES_NAME,
+                        le_geometry_descriptor);
+
+
+    RETURN_LONG(OGR_G_GetDimension(geometryH));
+    //endregion
+}
+
+
+PHP_FUNCTION(OGR_G_ExportToWkt)
+{
+    //region phpext
+    OGRGeometryH * geometryH;
+    zval *geometry_resource;
+
+    char *ppszDstText;
+    char *ret;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &geometry_resource) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(geometryH, OGRGeometryH*, &geometry_resource, -1, PHP_GEOMETRY_DESCRIPTOR_RES_NAME,
+                        le_geometry_descriptor);
+
+    if(OGR_G_ExportToWkt(geometryH, &ppszDstText) != OGRERR_NONE){
+        RETURN_NULL();
+    }
+
+    ret = estrdup(ppszDstText);
+    CPLFree(ppszDstText);
+    RETURN_STRING(ret, 0);
+
+    //endregion
+}
+
+PHP_FUNCTION(OGR_G_GetSpatialReference)
+{
+    //region phpext
+    OGRGeometryH * geometryH;
+    OGRSpatialReferenceH * spatialReferenceH;
+    zval *geometry_resource;
+
+    char *ppszDstText;
+    char *ret;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &geometry_resource) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(geometryH, OGRGeometryH*, &geometry_resource, -1, PHP_GEOMETRY_DESCRIPTOR_RES_NAME,
+                        le_geometry_descriptor);
+
+    spatialReferenceH = OGR_G_GetSpatialReference(geometryH);
+
+    ZEND_REGISTER_RESOURCE(return_value, spatialReferenceH, le_spatial_reference_descriptor);
+    //endregion
+}
+
+// endregion
+
+
 /* {{{ PHP_MINIT_FUNCTION
  */
 
@@ -542,12 +729,22 @@ PHP_MINIT_FUNCTION(pgdal)
         le_feature_descriptor = zend_register_list_destructors_ex(
         NULL, NULL, PHP_FEATURE_DESCRIPTOR_RES_NAME, module_number);
 
+        le_feature_dfn_descriptor = zend_register_list_destructors_ex(
+        NULL, NULL, PHP_FEATUREDFN_DESCRIPTOR_RES_NAME, module_number);
+
         le_field_dfn_descriptor = zend_register_list_destructors_ex(
         NULL, NULL, PHP_FIELD_DESCRIPTOR_RES_NAME, module_number);
+
+        le_geometry_descriptor = zend_register_list_destructors_ex(
+        NULL, NULL, PHP_GEOMETRY_DESCRIPTOR_RES_NAME, module_number);
+
+        le_spatial_reference_descriptor = zend_register_list_destructors_ex(
+        NULL, NULL, PHP_SPATIALREFERENCE_DESCRIPTOR_RES_NAME, module_number);
 
         le_field_type_descriptor = zend_register_list_destructors_ex(
         NULL, NULL, PHP_FIELD_TYPE_DESCRIPTOR_RES_NAME, module_number);
 
+    registerConstants();
         /* If you have INI entries, uncomment these lines
         REGISTER_INI_ENTRIES();
         */
@@ -627,12 +824,23 @@ zend_function_entry pgdal_functions[] = {
     PHP_FE(OGR_F_GetFID, NULL)
     PHP_FE(OGR_F_GetFieldCount, NULL)
     PHP_FE(OGR_F_GetFieldDefnRef, NULL)
+    PHP_FE(OGR_F_GetDefnRef, NULL)
+    PHP_FE(OGR_F_GetGeometryRef, NULL)
+
+    PHP_FE(OGR_FD_GetGeomType, NULL)
 
         // =================== FIELDs =================
 
     PHP_FE(OGR_Fld_GetNameRef, NULL)
     PHP_FE(OGR_Fld_GetType, NULL)
     PHP_FE(OGR_GetFieldTypeName, NULL)
+
+    // ========================== GEOMETRY =================
+    PHP_FE(OGR_G_GetGeometryName, NULL)
+    PHP_FE(OGR_G_GetGeometryType, NULL)
+    PHP_FE(OGR_G_GetDimension, NULL)
+    PHP_FE(OGR_G_ExportToWkt, NULL)
+    PHP_FE(OGR_G_GetSpatialReference, NULL)
 
 
         PHP_FE_END    /* Must be the last line in pgdal_functions[] */
