@@ -69,15 +69,9 @@ if test "$PHP_PGDAL" != "no"; then
       AC_MSG_ERROR(GDAL support not found.  Please make sure your GDAL includes OGR support.)
   fi
 
-  AC_MSG_RESULT([=================================>$GDAL_CFLAGS])
-  AC_MSG_RESULT([=================================>$GDAL_DIR])
-  AC_MSG_RESULT([=================================>$GDAL_LIBS])
-  AC_MSG_RESULT([=================================>$GDAL_SHARED_LIBADD])
-
   PHP_REQUIRE_CXX()
   PHP_SUBST(GDAL_SHARED_LIBADD)
   PHP_ADD_LIBRARY(stdc++, 1, GDAL_SHARED_LIBADD)
-  AC_MSG_RESULT([=================================>$GDAL_SHARED_LIBADD])
 
   EXTRA_LDFLAGS=$GDAL_SHARED_LIBADD
 
