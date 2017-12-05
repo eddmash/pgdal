@@ -28,6 +28,7 @@
 
 #include "ogr_api.h"
 #include "cpl_conv.h"
+#include "ogr_srs_api.h"
 #include "php_pgdal.h"
 #include "constants.h"
 
@@ -601,6 +602,7 @@ PHP_FUNCTION(OGR_GetFieldTypeName)
 
 
 //region geometry ########################## GEOMETRY ROUTINES ############################
+
 PHP_FUNCTION(OGR_G_GetGeometryName)
 {
     //region phpext
@@ -709,6 +711,282 @@ PHP_FUNCTION(OGR_G_GetSpatialReference)
 
     ZEND_REGISTER_RESOURCE(return_value, spatialReferenceH, le_spatial_reference_descriptor);
     //endregion
+}
+
+// endregion
+
+
+//region geometry ########################## GEOMETRY ROUTINES ############################
+
+
+PHP_FUNCTION(OSRExportToWkt)
+{
+            //region phpext
+        OGRSpatialReferenceH * spatialReferenceH;
+    zval *spatialref_resource;
+
+    char *ppszDstText;
+    char *ret;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &spatialref_resource) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(spatialReferenceH, OGRSpatialReferenceH*, &spatialref_resource, -1,
+        PHP_SPATIALREFERENCE_DESCRIPTOR_RES_NAME, le_spatial_reference_descriptor);
+
+    if(OSRExportToWkt(spatialReferenceH, &ppszDstText) != OGRERR_NONE){
+        RETURN_NULL();
+    }
+
+    ret = estrdup(ppszDstText);
+    CPLFree(ppszDstText);
+    RETURN_STRING(ret, 0);
+
+            //endregion
+}
+
+PHP_FUNCTION(OSRExportToPrettyWkt)
+{
+            //region phpext
+        OGRSpatialReferenceH * spatialReferenceH;
+    zval *spatialref_resource;
+
+    char *ppszDstText;
+    char *ret;
+    zend_bool bSimplify = 0;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r|l",
+            &spatialref_resource, &bSimplify) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(spatialReferenceH, OGRSpatialReferenceH*, &spatialref_resource, -1,
+        PHP_SPATIALREFERENCE_DESCRIPTOR_RES_NAME, le_spatial_reference_descriptor);
+
+    if(OSRExportToPrettyWkt(spatialReferenceH, &ppszDstText, bSimplify) != OGRERR_NONE){
+        RETURN_NULL();
+    }
+
+    ret = estrdup(ppszDstText);
+    CPLFree(ppszDstText);
+    RETURN_STRING(ret, 0);
+
+            //endregion
+}
+
+PHP_FUNCTION(OSRIsProjected)
+{
+            //region phpext
+        OGRSpatialReferenceH * spatialReferenceH;
+    zval *spatialref_resource;
+
+    char *ppszDstText;
+    char *ret;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r",
+            &spatialref_resource) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(spatialReferenceH, OGRSpatialReferenceH*, &spatialref_resource, -1,
+        PHP_SPATIALREFERENCE_DESCRIPTOR_RES_NAME, le_spatial_reference_descriptor);
+
+    RETURN_BOOL(OSRIsProjected(spatialReferenceH));
+
+            //endregion
+}
+
+PHP_FUNCTION(OSRIsGeographic)
+{
+            //region phpext
+        OGRSpatialReferenceH * spatialReferenceH;
+    zval *spatialref_resource;
+
+    char *ppszDstText;
+    char *ret;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r",
+            &spatialref_resource) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(spatialReferenceH, OGRSpatialReferenceH*, &spatialref_resource, -1,
+        PHP_SPATIALREFERENCE_DESCRIPTOR_RES_NAME, le_spatial_reference_descriptor);
+
+    RETURN_BOOL(OSRIsGeographic(spatialReferenceH));
+
+            //endregion
+}
+
+PHP_FUNCTION(OSRIsLocal)
+{
+            //region phpext
+        OGRSpatialReferenceH * spatialReferenceH;
+    zval *spatialref_resource;
+
+    char *ppszDstText;
+    char *ret;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r",
+            &spatialref_resource) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(spatialReferenceH, OGRSpatialReferenceH*, &spatialref_resource, -1,
+        PHP_SPATIALREFERENCE_DESCRIPTOR_RES_NAME, le_spatial_reference_descriptor);
+
+    RETURN_BOOL(OSRIsLocal(spatialReferenceH));
+
+            //endregion
+}
+
+PHP_FUNCTION(OSRIsSame)
+{
+            //region phpext
+        OGRSpatialReferenceH * spatialReferenceH;
+        OGRSpatialReferenceH * spatialReferenceH2;
+    zval *spatialref_resource;
+    zval *spatialref_resource2;
+
+    char *ppszDstText;
+    char *ret;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rr",
+            &spatialref_resource, &spatialref_resource2) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(spatialReferenceH, OGRSpatialReferenceH*, &spatialref_resource, -1,
+        PHP_SPATIALREFERENCE_DESCRIPTOR_RES_NAME, le_spatial_reference_descriptor);
+    ZEND_FETCH_RESOURCE(spatialReferenceH2, OGRSpatialReferenceH*, &spatialref_resource2, -1,
+        PHP_SPATIALREFERENCE_DESCRIPTOR_RES_NAME, le_spatial_reference_descriptor);
+
+    RETURN_BOOL(OSRIsSame(spatialReferenceH, spatialReferenceH2));
+
+            //endregion
+}
+
+PHP_FUNCTION(OSRIsGeocentric)
+{
+            //region phpext
+        OGRSpatialReferenceH * spatialReferenceH;
+    zval *spatialref_resource;
+
+    char *ppszDstText;
+    char *ret;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r",
+            &spatialref_resource) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(spatialReferenceH, OGRSpatialReferenceH*, &spatialref_resource, -1,
+        PHP_SPATIALREFERENCE_DESCRIPTOR_RES_NAME, le_spatial_reference_descriptor);
+
+    RETURN_BOOL(OSRIsGeocentric(spatialReferenceH));
+
+            //endregion
+}
+
+PHP_FUNCTION(OSRGetAttrValue)
+{
+            //region phpext
+        OGRSpatialReferenceH * spatialReferenceH;
+    zval *spatialref_resource;
+
+    char *ppszDstText;
+    char *value;
+    char *pszKey;
+    long *pszKeyLen;
+    long child = 0;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs|l",
+            &spatialref_resource, &pszKey, &pszKeyLen, &child) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(spatialReferenceH, OGRSpatialReferenceH*, &spatialref_resource, -1,
+        PHP_SPATIALREFERENCE_DESCRIPTOR_RES_NAME, le_spatial_reference_descriptor);
+    if(!pszKeyLen){
+        RETURN_NULL();
+    }
+    value = (char *)OSRGetAttrValue(spatialReferenceH, pszKey, child);
+    if(!value){
+       RETURN_NULL();
+    }
+    RETURN_STRING(value, 1);
+
+            //endregion
+}
+
+PHP_FUNCTION(OSRGetAuthorityCode)
+{
+            //region phpext
+        OGRSpatialReferenceH * spatialReferenceH;
+    zval *spatialref_resource;
+
+    char *ppszDstText;
+    char *value;
+    char *pszTargetKey= NULL ;
+    long *pszTargetKeyLen;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r|s",
+            &spatialref_resource, &pszTargetKey, &pszTargetKeyLen) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(spatialReferenceH, OGRSpatialReferenceH*, &spatialref_resource, -1,
+        PHP_SPATIALREFERENCE_DESCRIPTOR_RES_NAME, le_spatial_reference_descriptor);
+    if(!pszTargetKeyLen){
+        RETURN_NULL();
+    }
+    value = (char *)OSRGetAuthorityCode(spatialReferenceH, pszTargetKey);
+    if(!value){
+       RETURN_NULL();
+    }
+    RETURN_STRING(value, 1);
+
+            //endregion
+}
+PHP_FUNCTION(OSRGetAuthorityName)
+{
+            //region phpext
+        OGRSpatialReferenceH * spatialReferenceH;
+    zval *spatialref_resource;
+
+    char *ppszDstText;
+    char *value;
+    char *pszTargetKey= NULL ;
+    long *pszTargetKeyLen;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r|s",
+            &spatialref_resource, &pszTargetKey, &pszTargetKeyLen) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(spatialReferenceH, OGRSpatialReferenceH*, &spatialref_resource, -1,
+        PHP_SPATIALREFERENCE_DESCRIPTOR_RES_NAME, le_spatial_reference_descriptor);
+    if(!pszTargetKeyLen){
+        RETURN_NULL();
+    }
+    value = (char *)OSRGetAuthorityName(spatialReferenceH, pszTargetKey);
+    if(!value){
+       RETURN_NULL();
+    }
+    RETURN_STRING(value, 1);
+
+            //endregion
 }
 
 // endregion
@@ -836,11 +1114,25 @@ zend_function_entry pgdal_functions[] = {
     PHP_FE(OGR_GetFieldTypeName, NULL)
 
     // ========================== GEOMETRY =================
+
     PHP_FE(OGR_G_GetGeometryName, NULL)
     PHP_FE(OGR_G_GetGeometryType, NULL)
     PHP_FE(OGR_G_GetDimension, NULL)
     PHP_FE(OGR_G_ExportToWkt, NULL)
     PHP_FE(OGR_G_GetSpatialReference, NULL)
+
+
+    // ======================== SPATIAL REFERENCE ===================
+    PHP_FE(OSRExportToWkt, NULL)
+    PHP_FE(OSRExportToPrettyWkt, NULL)
+    PHP_FE(OSRIsProjected, NULL)
+    PHP_FE(OSRIsGeographic, NULL)
+    PHP_FE(OSRIsLocal, NULL)
+    PHP_FE(OSRIsSame, NULL)
+    PHP_FE(OSRIsGeocentric, NULL)
+    PHP_FE(OSRGetAttrValue, NULL)
+    PHP_FE(OSRGetAuthorityCode, NULL)
+    PHP_FE(OSRGetAuthorityName, NULL)
 
 
         PHP_FE_END    /* Must be the last line in pgdal_functions[] */
