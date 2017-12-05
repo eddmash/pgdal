@@ -38,6 +38,12 @@ extern zend_module_entry pgdal_module_entry;
 #include "TSRM.h"
 #endif
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#define IS_MAJOR_VERSION(X) (GDAL_MAJOR_VERSION==X)
+
 /* 
   	Declare any global variables you may need between the BEGIN
 	and END macros here:     

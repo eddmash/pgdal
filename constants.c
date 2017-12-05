@@ -7,6 +7,7 @@
 #include "ext/standard/info.h"
 
 #include "ogr_api.h"
+#include "php_pgdal.h"
 #include "constants.h"
 
 void registerConstants(INIT_FUNC_ARGS){
@@ -43,13 +44,16 @@ void registerConstants(INIT_FUNC_ARGS){
     REGISTER_LONG_CONSTANT("OFTDate", OFTDate, OGR_CONST_FLAG);
     REGISTER_LONG_CONSTANT("OFTTime", OFTTime, OGR_CONST_FLAG);
     REGISTER_LONG_CONSTANT("OFTDateTime", OFTDateTime, OGR_CONST_FLAG);
-    REGISTER_LONG_CONSTANT("OFTInteger64", OFTInteger64, OGR_CONST_FLAG);
-    REGISTER_LONG_CONSTANT("OFTInteger64List", OFTInteger64List, OGR_CONST_FLAG);
     REGISTER_LONG_CONSTANT("OJUndefined", OJUndefined, OGR_CONST_FLAG);
     REGISTER_LONG_CONSTANT("OJLeft", OJLeft, OGR_CONST_FLAG);
     REGISTER_LONG_CONSTANT("OJRight", OJRight, OGR_CONST_FLAG);
     REGISTER_LONG_CONSTANT("OGRNullFID", OGRNullFID, OGR_CONST_FLAG);
     REGISTER_LONG_CONSTANT("OGRUnsetMarker", OGRUnsetMarker, OGR_CONST_FLAG);
+
+#if IS_MAJOR_VERSION(2)
+    REGISTER_LONG_CONSTANT("OFTInteger64", OFTInteger64, OGR_CONST_FLAG);
+    REGISTER_LONG_CONSTANT("OFTInteger64List", OFTInteger64List, OGR_CONST_FLAG);
+#endif
 //    REGISTER_STRING_CONSTANT("OLCRandomRead", (char*)OLCRandomRead, OGR_CONST_FLAG);
 //    REGISTER_STRING_CONSTANT("OLCSequentialWrite", (char*)OLCSequentialWrite, OGR_CONST_FLAG);
 //    REGISTER_STRING_CONSTANT("OLCRandomWrite", (char*)OLCRandomWrite, OGR_CONST_FLAG);

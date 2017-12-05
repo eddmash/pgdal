@@ -50,6 +50,14 @@ if test "$PHP_PGDAL" != "no"; then
 
   ogr_version_full=`$GDAL_CONFIG --version`
   ogr_version=`echo ${ogr_version_full} | awk 'BEGIN { FS = "."; } { printf "%d", ($1 * 1000 + $2) * 1000 + $3;}'`
+  ogr_version_major=`echo ${ogr_version_full} | awk 'BEGIN { FS = "."; } { printf "%d", $1;}'`
+
+  if test "$ogr_version_major" -ge 1; then
+    AC_DEFINE(GDAL_MAJOR_VERSION, 1, [Whether you have GDAL])
+  elif test "$ogr_version_major" -ge 2; then
+    AC_DEFINE(GDAL_MAJOR_VERSION, 2, [Whether you have GDAL])
+  fi
+
   if test "$ogr_version" -ge 1007003; then
     AC_MSG_RESULT($ogr_version_full)
     GDAL_LIBS=`$GDAL_CONFIG --libs`
