@@ -75,5 +75,5 @@ if test "$PHP_PGDAL" != "no"; then
 
   EXTRA_LDFLAGS=$GDAL_SHARED_LIBADD
 
-  PHP_NEW_EXTENSION(pgdal, pgdal.c, $ext_shared)
+  PHP_NEW_EXTENSION(pgdal, pgdal.c constants.c, $ext_shared)
 fi
