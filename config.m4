@@ -54,10 +54,11 @@ if test "$PHP_PGDAL" != "no"; then
 
   if test "$ogr_version_major" -ge 1; then
     AC_DEFINE(GDAL_MAJOR_VERSION, 1, [Whether you have GDAL])
-  elif test "$ogr_version_major" -ge 2; then
+  fi
+  if test "$ogr_version_major" -ge 2; then
     AC_DEFINE(GDAL_MAJOR_VERSION, 2, [Whether you have GDAL])
   fi
-
+AC_MSG_RESULT([$ogr_version_major------------------------------> $ogr_version_full -- $ogr_version])
   if test "$ogr_version" -ge 1007003; then
     AC_MSG_RESULT($ogr_version_full)
     GDAL_LIBS=`$GDAL_CONFIG --libs`
