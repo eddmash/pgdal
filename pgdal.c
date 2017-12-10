@@ -31,6 +31,7 @@
 #include "ogr_srs_api.h"
 #include "php_pgdal.h"
 #include "constants.h"
+#include "../../Zend/zend.h"
 
 /* If you declare any globals in php_pgdal.h uncomment this:
 ZEND_DECLARE_MODULE_GLOBALS(pgdal)
@@ -49,6 +50,18 @@ static int le_feature_dfn_descriptor;
 static int le_geometry_descriptor;
 static int le_field_type_descriptor;
 static int le_spatial_reference_descriptor;
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_by_ref, 0, 0, 9)
+    ZEND_ARG_PASS_INFO(0)
+    ZEND_ARG_PASS_INFO(0)
+    ZEND_ARG_PASS_INFO(1)
+    ZEND_ARG_PASS_INFO(1)
+    ZEND_ARG_PASS_INFO(1)
+    ZEND_ARG_PASS_INFO(1)
+    ZEND_ARG_PASS_INFO(1)
+    ZEND_ARG_PASS_INFO(1)
+    ZEND_ARG_PASS_INFO(1)
+ZEND_END_ARG_INFO();
 /* Remove comments and fill if you need to have entries in php.ini
 PHP_INI_BEGIN()
     STD_PHP_INI_ENTRY("pgdal.global_value",      "42", PHP_INI_ALL, OnUpdateLong, global_value, zend_pgdal_globals, pgdal_globals)
@@ -56,7 +69,6 @@ PHP_INI_BEGIN()
 PHP_INI_END()
 */
 /* }}} */
-
 /* Remove the following function when you have successfully modified config.m4
    so that your module can be compiled into PHP, it exists only for testing
    purposes. */
@@ -536,6 +548,101 @@ PHP_FUNCTION (OGR_F_GetGeometryRef) {
     //endregion
 }
 
+PHP_FUNCTION (OGR_F_GetFieldAsInteger) {
+    //region phpext
+    long fieldIndex;
+    OGRFeatureH *featureH;
+    zval *feature_resource;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rl", &feature_resource, &fieldIndex) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(featureH, OGRFeatureH * , &feature_resource, -1, PHP_FEATURE_DESCRIPTOR_RES_NAME,
+                        le_feature_descriptor);
+
+
+    RETURN_LONG(OGR_F_GetFieldAsInteger(featureH, fieldIndex));
+    //endregion
+}
+
+PHP_FUNCTION (OGR_F_GetFieldAsDouble) {
+    //region phpext
+    long fieldIndex;
+    OGRFeatureH *featureH;
+    zval *feature_resource;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rl", &feature_resource, &fieldIndex) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(featureH, OGRFeatureH * , &feature_resource, -1, PHP_FEATURE_DESCRIPTOR_RES_NAME,
+                        le_feature_descriptor);
+
+
+    RETURN_DOUBLE(OGR_F_GetFieldAsDouble(featureH, fieldIndex));
+    //endregion
+}
+
+PHP_FUNCTION (OGR_F_GetFieldAsString) {
+    //region phpext
+    long fieldIndex;
+    OGRFeatureH *featureH;
+    zval *feature_resource;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rl", &feature_resource, &fieldIndex) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(featureH, OGRFeatureH * , &feature_resource, -1, PHP_FEATURE_DESCRIPTOR_RES_NAME,
+                        le_feature_descriptor);
+
+
+    RETURN_STRING((char * )OGR_F_GetFieldAsString(featureH, fieldIndex), 1);
+    //endregion
+}
+
+PHP_FUNCTION (OGR_F_GetFieldAsDateTime) {
+    //region phpext
+    long fieldIndex;
+    zval * year;
+    zval * month;
+    zval * day;
+    zval * hour;
+    zval * minute;
+    zval * second;
+    zval * timezoneFlag;
+    OGRFeatureH *featureH;
+    zval *feature_resource;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rlzzzzzzz", &feature_resource, &fieldIndex,
+                &year, &month, &day, &hour, &minute, &second, &timezoneFlag) == FAILURE ) {
+        RETURN_NULL();
+    }
+    /* Use the zval* to verify the resource type and
+     * retrieve its pointer from the lookup table */
+    ZEND_FETCH_RESOURCE(featureH, OGRFeatureH *, &feature_resource, -1, PHP_FEATURE_DESCRIPTOR_RES_NAME,
+                        le_feature_descriptor);
+
+    int y, m, d, h, min, s, tz;
+
+    int status = OGR_F_GetFieldAsDateTime(featureH, fieldIndex, &y, &m, &d, &h, &min, &s, &tz);
+
+    /* Make sure the variable is a string */
+    ZVAL_LONG(year, y);
+    ZVAL_LONG(month, m);
+    ZVAL_LONG(day, d);
+    ZVAL_LONG(hour, h);
+    ZVAL_LONG(minute, min);
+    ZVAL_LONG(second, s);
+    ZVAL_LONG(timezoneFlag, tz);
+    RETURN_LONG(status);
+    //endregion
+}
+
 
 // endregion
 
@@ -630,15 +737,12 @@ PHP_FUNCTION (OGR_GetFieldTypeName) {
 
     RETURN_STRING((char *) OGR_GetFieldTypeName(field_type_resource), 1);
     //endregion
-
 }
 
 
 // endregion
 
-
-
-//region geometry ########################## FEATURE DEFINATIION ROUTINES ############################
+//region featuredfn ########################## FEATURE DEFINATION ROUTINES ############################
 
 PHP_FUNCTION (OGR_FD_GetGeomType) {
     //region phpext
@@ -1305,6 +1409,11 @@ zend_function_entry pgdal_functions[] = {
         PHP_FE(OGR_F_GetFieldDefnRef, NULL)
         PHP_FE(OGR_F_GetDefnRef, NULL)
         PHP_FE(OGR_F_GetGeometryRef, NULL)
+
+        PHP_FE(OGR_F_GetFieldAsString, NULL)
+        PHP_FE(OGR_F_GetFieldAsInteger, NULL)
+        PHP_FE(OGR_F_GetFieldAsDouble, NULL)
+        PHP_FE(OGR_F_GetFieldAsDateTime, arginfo_by_ref)
 
         // =================== FIELDs =================
 

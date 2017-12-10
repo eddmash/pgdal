@@ -1,0 +1,6 @@
+#/bin/sh
+phpize --clean
+phpize
+./configure --with-php-config=php-config
+make
+make install
